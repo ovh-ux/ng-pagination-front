@@ -102,7 +102,6 @@ angular.module("ovh-angular-pagination-front").directive("paginationFront", func
                     var filtredItems = itemList.filter(function (item) {
                         return item !== rejectedItem;
                     });
-                    $scope.onTransformItemDone({ items: filtredItems });
                     return filtredItems;
                 });
                 $scope.onTransformItemGetPromise({ promise: promise });
@@ -133,6 +132,7 @@ angular.module("ovh-angular-pagination-front").directive("paginationFront", func
                     if ($scope.transformItem) {
                         doTransform(itemsToLoad).then(function (transformatedItems) {
                             $scope.paginatedItems = transformatedItems;
+                            $scope.onTransformItemDone({ items: transformatedItems });
                         });
                     } else {
                         $scope.paginatedItems = itemsToLoad;
@@ -148,18 +148,11 @@ angular.module("ovh-angular-pagination-front").directive("paginationFront", func
                     !isNaN(parseInt(value, 10));
             };
 
-            $scope.$watch("items", function (nv) {
-                if (nv !== undefined) {
-                    if (angular.isObject(nv) && !angular.isArray(nv)) {
-                        $scope.arrayItems = _.toArray($scope.items);
-                    } else {
-                        $scope.arrayItems = $scope.items;
-                    }
-                    $scope.arrayItems = $scope.arrayItems || [];
-                    $scope.totalItems = $scope.arrayItems.length;
-                    paginates();
-                }
-            }, true);
+            $scope.$watchCollection("items", function (newCollection) {
+                $scope.arrayItems = newCollection || [];
+                $scope.totalItems = $scope.arrayItems.length;
+                paginates();
+            });
 
             // Watch change page
             $scope.$watch("currentPage", function (page) {
